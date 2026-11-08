@@ -1,0 +1,2 @@
+"""Othello evaluation heuristics placeholder."""
+

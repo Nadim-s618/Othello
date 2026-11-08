@@ -64,6 +64,15 @@ deployed frontend URL:
 FRONTEND_ORIGINS=https://YOUR-FRONTEND.vercel.app
 ```
 
+Also set a persistent PostgreSQL connection string:
+
+```text
+DATABASE_URL=postgresql://USER:PASSWORD@HOST/DATABASE?sslmode=require
+```
+
+Create this database with a provider such as Neon, Supabase, or Vercel
+Postgres. The application creates its `games` table automatically on startup.
+
 ### Frontend project
 
 - Root Directory: `frontend`
@@ -77,10 +86,9 @@ Set this frontend environment variable:
 VITE_API_URL=https://YOUR-BACKEND.vercel.app/api
 ```
 
-The backend automatically uses `/tmp/othello` on Vercel so the demo can run
-without writing into the deployed source bundle. Vercel storage is temporary,
-so SQLite games and newly trained weights are not durable across instances.
-For persistent public games, migrate the SQLite database to PostgreSQL.
+SQLite remains available for local development. Vercel deployments require
+`DATABASE_URL` so game state is stored in PostgreSQL rather than temporary
+function storage.
 
 ## API outline
 

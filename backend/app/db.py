@@ -7,6 +7,12 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+DATABASE_URL = os.getenv("DATABASE_URL", "").strip()
+USING_POSTGRES = DATABASE_URL.startswith(("postgres://", "postgresql://"))
+
+if os.getenv("VERCEL") and not USING_POSTGRES:
+    raise RuntimeError("DATABASE_URL must be configured for the deployed application.")
+
 PROJECT_DATA_DIR = Path(__file__).resolve().parents[1]
 DEFAULT_DATA_DIR = Path("/tmp/othello") if os.getenv("VERCEL") else PROJECT_DATA_DIR
 DATA_DIR = Path(os.getenv("OTHELLO_DATA_DIR", str(DEFAULT_DATA_DIR)))
@@ -18,11 +24,21 @@ def utc_now() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
-def connect() -> sqlite3.Connection:
+def connect() -> Any:
+    if USING_POSTGRES:
+        import psycopg
+        from psycopg.rows import dict_row
+
+        return psycopg.connect(DATABASE_URL, row_factory=dict_row, connect_timeout=10)
+
     connection = sqlite3.connect(DATABASE_PATH, timeout=5.0)
     connection.row_factory = sqlite3.Row
     connection.execute("PRAGMA busy_timeout = 5000")
     return connection
+
+
+def placeholder() -> str:
+    return "%s" if USING_POSTGRES else "?"
 
 
 def init_db() -> None:
@@ -42,18 +58,20 @@ def init_db() -> None:
             )
             """
         )
-        columns = {row["name"] for row in connection.execute("PRAGMA table_info(games)")}
-        if "version" not in columns:
-            connection.execute("ALTER TABLE games ADD COLUMN version INTEGER NOT NULL DEFAULT 0")
+        if not USING_POSTGRES:
+            columns = {row["name"] for row in connection.execute("PRAGMA table_info(games)")}
+            if "version" not in columns:
+                connection.execute("ALTER TABLE games ADD COLUMN version INTEGER NOT NULL DEFAULT 0")
 
 
 def create_game(game_id: str, board: list[list[str]], current_player: str, message: str) -> dict[str, Any]:
     timestamp = utc_now()
+    mark = placeholder()
     with connect() as connection:
         connection.execute(
-            """
+            f"""
             INSERT INTO games (id, board, current_player, status, winner, last_message, created_at, updated_at)
-            VALUES (?, ?, ?, 'active', NULL, ?, ?, ?)
+            VALUES ({mark}, {mark}, {mark}, 'active', NULL, {mark}, {mark}, {mark})
             """,
             (game_id, json.dumps(board), current_player, message, timestamp, timestamp),
         )
@@ -61,8 +79,9 @@ def create_game(game_id: str, board: list[list[str]], current_player: str, messa
 
 
 def get_game(game_id: str) -> dict[str, Any] | None:
+    mark = placeholder()
     with connect() as connection:
-        row = connection.execute("SELECT * FROM games WHERE id = ?", (game_id,)).fetchone()
+        row = connection.execute(f"SELECT * FROM games WHERE id = {mark}", (game_id,)).fetchone()
     if row is None:
         return None
     game = dict(row)
@@ -80,12 +99,13 @@ def update_game(
     expected_version: int,
 ) -> dict[str, Any] | None:
     """Update a game only if it has not changed since it was read."""
+    mark = placeholder()
     with connect() as connection:
         cursor = connection.execute(
-            """
+            f"""
             UPDATE games
-            SET board = ?, current_player = ?, status = ?, winner = ?, last_message = ?, updated_at = ?, version = version + 1
-            WHERE id = ? AND version = ?
+            SET board = {mark}, current_player = {mark}, status = {mark}, winner = {mark}, last_message = {mark}, updated_at = {mark}, version = version + 1
+            WHERE id = {mark} AND version = {mark}
             """,
             (json.dumps(board), current_player, status, winner, message, utc_now(), game_id, expected_version),
         )

@@ -1,12 +1,17 @@
 from __future__ import annotations
 
 import json
+import os
 import sqlite3
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-DATABASE_PATH = Path(__file__).resolve().parents[1] / "othello.db"
+PROJECT_DATA_DIR = Path(__file__).resolve().parents[1]
+DEFAULT_DATA_DIR = Path("/tmp/othello") if os.getenv("VERCEL") else PROJECT_DATA_DIR
+DATA_DIR = Path(os.getenv("OTHELLO_DATA_DIR", str(DEFAULT_DATA_DIR)))
+DATA_DIR.mkdir(parents=True, exist_ok=True)
+DATABASE_PATH = DATA_DIR / "othello.db"
 
 
 def utc_now() -> str:

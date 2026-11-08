@@ -1,0 +1,34 @@
+{
+  "genetic_algorithm": {
+    "B": {
+      "_version": 2,
+      "corners": 86.14287616067016,
+      "mobility": 20.113913811334285,
+      "pieces": 2.8576856901112935,
+      "positional": 0.6103587939586144
+    },
+    "W": {
+      "_version": 2,
+      "corners": 106.53264574241665,
+      "mobility": 14.730182559066009,
+      "pieces": 2.7090126147622513,
+      "positional": 0.5587554418759506
+    }
+  },
+  "hill_climbing": {
+    "B": {
+      "_version": 2,
+      "corners": 80.0,
+      "mobility": 12.0,
+      "pieces": 1.5,
+      "positional": 1.0
+    },
+    "W": {
+      "_version": 2,
+      "corners": 80.0,
+      "mobility": 12.0,
+      "pieces": 1.5,
+      "positional": 1.0
+    }
+  }
+}

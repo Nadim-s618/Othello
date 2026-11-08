@@ -41,6 +41,47 @@ npm run dev
 
 Open the URL printed by Vite, usually <http://localhost:5173>.
 
+## Deploy on Vercel
+
+This repository can be deployed as two Vercel projects from the same Git
+repository:
+
+### Backend project
+
+- Root Directory: `backend`
+- Framework preset: let Vercel detect FastAPI/Python
+- Build Command: leave empty
+- Output Directory: leave empty
+- Start Command: leave empty
+
+Vercel uses `backend/main.py` as the FastAPI entrypoint. After deployment,
+verify `https://YOUR-BACKEND.vercel.app/api/health`.
+
+Set this backend environment variable in Vercel, replacing the URL with the
+deployed frontend URL:
+
+```text
+FRONTEND_ORIGINS=https://YOUR-FRONTEND.vercel.app
+```
+
+### Frontend project
+
+- Root Directory: `frontend`
+- Framework preset: Vite
+- Build Command: `npm run build`
+- Output Directory: `dist`
+
+Set this frontend environment variable:
+
+```text
+VITE_API_URL=https://YOUR-BACKEND.vercel.app/api
+```
+
+The backend automatically uses `/tmp/othello` on Vercel so the demo can run
+without writing into the deployed source bundle. Vercel storage is temporary,
+so SQLite games and newly trained weights are not durable across instances.
+For persistent public games, migrate the SQLite database to PostgreSQL.
+
 ## API outline
 
 - `POST /api/games` creates a game.

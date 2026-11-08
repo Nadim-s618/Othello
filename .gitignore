@@ -3,7 +3,7 @@ __pycache__/
 *.py[cod]
 .pytest_cache/
 backend/othello.db
-backend/optimized_weights.json
+!backend/optimized_weights.json
 frontend/node_modules/
 frontend/dist/
 .DS_Store

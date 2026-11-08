@@ -9,7 +9,13 @@ import threading
 from pathlib import Path
 from typing import Any
 
-WEIGHTS_PATH = Path(__file__).resolve().parents[2] / "optimized_weights.json"
+PROJECT_WEIGHTS_PATH = Path(__file__).resolve().parents[2] / "optimized_weights.json"
+DEFAULT_WEIGHTS_PATH = (
+    Path("/tmp/othello/optimized_weights.json")
+    if os.getenv("VERCEL")
+    else PROJECT_WEIGHTS_PATH
+)
+WEIGHTS_PATH = Path(os.getenv("OTHELLO_WEIGHTS_PATH", str(DEFAULT_WEIGHTS_PATH)))
 WEIGHTS_VERSION = 2
 _LOCK = threading.Lock()
 
@@ -57,11 +63,18 @@ def save_weights(strategy: str, player: str, weights: Any) -> None:
 
 
 def _read() -> dict[str, Any]:
-    if not WEIGHTS_PATH.exists():
-        return {}
-    try:
-        with WEIGHTS_PATH.open("r", encoding="utf-8") as weights_file:
-            data = json.load(weights_file)
-        return data if isinstance(data, dict) else {}
-    except (OSError, json.JSONDecodeError, TypeError, ValueError):
-        return {}
+    paths = [WEIGHTS_PATH]
+    if WEIGHTS_PATH != PROJECT_WEIGHTS_PATH:
+        paths.append(PROJECT_WEIGHTS_PATH)
+
+    for path in paths:
+        if not path.exists():
+            continue
+        try:
+            with path.open("r", encoding="utf-8") as weights_file:
+                data = json.load(weights_file)
+            if isinstance(data, dict):
+                return data
+        except (OSError, json.JSONDecodeError, TypeError, ValueError):
+            continue
+    return {}

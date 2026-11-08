@@ -8,7 +8,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
-from .db import create_game, get_game, init_db, update_game
+from .db import USING_POSTGRES, create_game, get_game, init_db, update_game
 from .ai.alpha_beta import choose_move as choose_alpha_beta_move
 from .ai.genetic_algorithm import choose_move as choose_genetic_move
 from .ai.greedy import choose_move as choose_greedy_move
@@ -115,7 +115,10 @@ def save_game(
 
 @app.get("/api/health")
 def health() -> dict[str, str]:
-    return {"status": "ok"}
+    return {
+        "status": "ok",
+        "database": "postgresql" if USING_POSTGRES else "sqlite",
+    }
 
 
 @app.post("/api/games", status_code=201)

@@ -29,6 +29,11 @@ python -m uvicorn app.main:app --reload
 
 The API runs at <http://127.0.0.1:8000>. The SQLite database is created automatically at `backend/othello.db`.
 
+To use PostgreSQL locally, copy `backend/.env.example` to `backend/.env` and
+replace `DATABASE_URL` with your connection string. The backend loads this file
+automatically when it starts. Keep `backend/.env` private; for Vercel, add the
+same variables in the project environment settings instead.
+
 ## Run the frontend
 
 In a second terminal:
@@ -40,6 +45,12 @@ npm run dev
 ```
 
 Open the URL printed by Vite, usually <http://localhost:5173>.
+
+For local development, `VITE_API_URL` is optional and defaults to
+`http://127.0.0.1:8000/api`. For a deployed frontend, copy
+`frontend/.env.example` to `frontend/.env.local`, set the deployed backend URL,
+and configure the same `VITE_API_URL` in the frontend hosting provider before
+building. Vite embeds this value at build time, so redeploy after changing it.
 
 ## Deploy on Vercel
 
@@ -85,6 +96,10 @@ Set this frontend environment variable:
 ```text
 VITE_API_URL=https://YOUR-BACKEND.vercel.app/api
 ```
+
+The frontend and backend are separate deployments, so this variable is
+required in production. Do not leave it pointing to `localhost` or
+`127.0.0.1`.
 
 SQLite remains available for local development. Vercel deployments require
 `DATABASE_URL` so game state is stored in PostgreSQL rather than temporary

@@ -1,6 +1,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
-const API_URL = import.meta.env.VITE_API_URL ?? 'http://127.0.0.1:8000/api'
+const configuredApiUrl = import.meta.env.VITE_API_URL?.trim()
+const API_URL = configuredApiUrl
+  ? configuredApiUrl.replace(/\/+$/, '')
+  : import.meta.env.DEV
+    ? 'http://127.0.0.1:8000/api'
+    : ''
+const API_CONFIGURATION_ERROR = !API_URL
+  ? 'The deployed frontend is missing VITE_API_URL. Set it to your backend URL ending in /api, then redeploy.'
+  : null
 
 const AI_OPTIONS = [
   ['greedy', 'Greedy AI', 'Beginner', 'Selects the best immediate move'],
@@ -15,6 +23,8 @@ const AI_DETAILS = Object.fromEntries(
 )
 
 async function api(path, options = {}) {
+  if (API_CONFIGURATION_ERROR) throw new Error(API_CONFIGURATION_ERROR)
+
   let response
   try {
     response = await fetch(`${API_URL}${path}`, {

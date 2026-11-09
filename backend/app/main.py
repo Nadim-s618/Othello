@@ -52,6 +52,7 @@ app.add_middleware(
 
 # All search-based strategies use the same depth for fair comparisons.
 COMPARISON_SEARCH_DEPTH = 3
+HINT_SEARCH_DEPTH = 2
 
 
 class MoveRequest(BaseModel):
@@ -145,7 +146,7 @@ def game_hint(game_id: str) -> dict:
         }
 
     player = game["current_player"]
-    move = choose_alpha_beta_move(game["board"], player, COMPARISON_SEARCH_DEPTH)
+    move = choose_alpha_beta_move(game["board"], player, HINT_SEARCH_DEPTH)
     if move is None:
         return {
             "strategy": "alpha_beta",

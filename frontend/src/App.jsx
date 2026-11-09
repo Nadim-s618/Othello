@@ -119,28 +119,22 @@ function App() {
   }, [])
 
   useEffect(() => {
-    let cancelled = false
-    if (!game || game.status !== 'active') {
-      setHint(null)
-      setHintLoading(false)
-      return () => { cancelled = true }
-    }
-
     setHint(null)
-    setHintLoading(true)
-    api(`/games/${game.id}/hint`)
-      .then(nextHint => {
-        if (!cancelled) setHint(nextHint)
-      })
-      .catch(() => {
-        if (!cancelled) setHint({ message: 'Tip unavailable right now.' })
-      })
-      .finally(() => {
-        if (!cancelled) setHintLoading(false)
-      })
-
-    return () => { cancelled = true }
+    setHintLoading(false)
   }, [game?.id, game?.updated_at, game?.current_player, game?.status])
+
+  const requestHint = useCallback(async () => {
+    if (!game || game.status !== 'active' || mode === 'tournament' || hintLoading) return
+
+    setHintLoading(true)
+    try {
+      setHint(await api(`/games/${game.id}/hint`))
+    } catch {
+      setHint({ message: 'Tip unavailable right now.' })
+    } finally {
+      setHintLoading(false)
+    }
+  }, [game, hintLoading, mode])
 
   const startGame = useCallback(async () => {
     setBusy(true)
@@ -436,17 +430,25 @@ function App() {
         <div className="board-status-row">
         <div className="tip-card" aria-live="polite">
           <p className="label">Next move tip</p>
-          {hintLoading ? (
+          {mode === 'tournament' ? (
+            <p>Hints are disabled during automatic tournaments.</p>
+          ) : hintLoading ? (
             <strong className="tip-thinking">Analyzing…</strong>
           ) : hint?.move ? (
             <>
               <strong className="tip-move">{hint.move.notation}</strong>
               <p>{hint.message}</p>
+              <button className="hint-button" onClick={requestHint} disabled={busy}>Refresh hint</button>
             </>
           ) : (
-            <p>{hint?.message ?? 'Waiting for the board…'}</p>
+            <>
+              <p>{hint?.message ?? 'Request a suggestion when you want one.'}</p>
+              {game?.status === 'active' && (
+                <button className="hint-button" onClick={requestHint} disabled={busy}>Show hint</button>
+              )}
+            </>
           )}
-          <small>Powered by Alpha-Beta search</small>
+          {mode !== 'tournament' && <small>Powered by Alpha-Beta search when requested</small>}
         </div>
         <div className="board-card">
           {game ? (

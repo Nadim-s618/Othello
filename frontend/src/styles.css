@@ -86,6 +86,9 @@ h1 { font: 700 clamp(4rem, 12vw, 8.5rem)/.84 Fraunces, serif; letter-spacing: -.
 .tip-card small { color: #675f54; font-size: 9px; line-height: 1.4; }
 .tip-move { font: 600 32px Fraunces, serif; }
 .tip-thinking { font: 600 20px Fraunces, serif; }
+.hint-button { border: 1px solid #171717; border-radius: 9px; padding: 9px 12px; background: transparent; color: #171717; cursor: pointer; font-size: 10px; }
+.hint-button:hover:not(:disabled) { background: #fff0df; }
+.hint-button:disabled { cursor: wait; opacity: .55; }
 .board-wrap { width: min(620px, 100%); }
 .axis { color: #171717; font-size: 11px; }
 .top-axis { display: grid; grid-template-columns: repeat(8, 1fr); padding: 0 1px 8px 31px; text-align: center; }
